@@ -1,11 +1,17 @@
 package com.example.Laba7.controller;
 
 import com.example.Laba7.model.Property;
+import com.example.Laba7.repository.PropertyRepository;
 import com.example.Laba7.service.PropertyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/properties")
@@ -14,6 +20,9 @@ public class PropertyController {
 
     @Autowired
     private PropertyService propertyService;
+
+    @Autowired
+    private PropertyRepository propertyRepository;  // 🔥 ДОБАВЛЕНО
 
     @GetMapping
     public List<Property> getAllProperties() {
@@ -35,10 +44,7 @@ public class PropertyController {
         return propertyService.updateProperty(id, property);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteProperty(@PathVariable Long id) {
-        propertyService.deleteProperty(id);
-    }
+    // 🔥 УДАЛЁН ПЕРВЫЙ МЕТОД deleteProperty (строки 48-51)
 
     @GetMapping("/search")
     public List<Property> searchProperties(
@@ -52,5 +58,40 @@ public class PropertyController {
     @GetMapping("/agent/{agentId}")
     public List<Property> getPropertiesByAgent(@PathVariable Long agentId) {
         return propertyService.getPropertiesByAgent(agentId);
+    }
+
+    // 🔥 ОСТАВЛЯЕМ ТОЛЬКО ЭТОТ МЕТОД
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteProperty(@PathVariable Long id) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Проверяем, существует ли объявление
+            Optional<Property> propertyOpt = propertyRepository.findById(id);
+
+            if (propertyOpt.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "Объявление с ID " + id + " не найдено");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            // Удаляем объявление
+            propertyRepository.deleteById(id);
+
+            response.put("success", true);
+            response.put("message", "Объявление успешно удалено");
+            response.put("deletedId", id);
+
+            System.out.println("✅ Объявление #" + id + " удалено");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Ошибка при удалении: " + e.getMessage());
+            System.err.println("❌ Ошибка удаления объявления #" + id + ": " + e.getMessage());
+
+            return ResponseEntity.status(500).body(response);
+        }
     }
 }
