@@ -22,7 +22,7 @@ public class PropertyController {
     private PropertyService propertyService;
 
     @Autowired
-    private PropertyRepository propertyRepository;  // 🔥 ДОБАВЛЕНО
+    private PropertyRepository propertyRepository;
 
     @GetMapping
     public List<Property> getAllProperties() {
@@ -44,8 +44,6 @@ public class PropertyController {
         return propertyService.updateProperty(id, property);
     }
 
-    // 🔥 УДАЛЁН ПЕРВЫЙ МЕТОД deleteProperty (строки 48-51)
-
     @GetMapping("/search")
     public List<Property> searchProperties(
             @RequestParam(required = false) String city,
@@ -60,7 +58,6 @@ public class PropertyController {
         return propertyService.getPropertiesByAgent(agentId);
     }
 
-    // 🔥 ОСТАВЛЯЕМ ТОЛЬКО ЭТОТ МЕТОД
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, Object>> deleteProperty(@PathVariable Long id) {
         Map<String, Object> response = new HashMap<>();
@@ -75,21 +72,20 @@ public class PropertyController {
                 return ResponseEntity.status(404).body(response);
             }
 
-            // Удаляем объявление
             propertyRepository.deleteById(id);
 
             response.put("success", true);
             response.put("message", "Объявление успешно удалено");
             response.put("deletedId", id);
 
-            System.out.println("✅ Объявление #" + id + " удалено");
+            System.out.println(" Объявление #" + id + " удалено");
 
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Ошибка при удалении: " + e.getMessage());
-            System.err.println("❌ Ошибка удаления объявления #" + id + ": " + e.getMessage());
+            System.err.println(" Ошибка удаления объявления #" + id + ": " + e.getMessage());
 
             return ResponseEntity.status(500).body(response);
         }

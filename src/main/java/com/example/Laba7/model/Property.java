@@ -38,9 +38,13 @@ public class Property {
     @Enumerated(EnumType.STRING)
     private PropertyType type;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "agent_id")
     private User agent;
+
+    // 🔥 ВАЖНО: Поле для приёма ID из JSON (JPA его игнорирует)
+    @Transient
+    private Long agentId;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -48,21 +52,7 @@ public class Property {
     // Конструкторы
     public Property() {}
 
-    public Property(String title, String description, String city, String address,
-                    BigDecimal price, Integer rooms, Double area, PropertyType type, User agent) {
-        this.title = title;
-        this.description = description;
-        this.city = city;
-        this.address = address;
-        this.price = price;
-        this.rooms = rooms;
-        this.area = area;
-        this.type = type;
-        this.agent = agent;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    // Геттеры
+    // ===== Геттеры =====
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
@@ -75,8 +65,9 @@ public class Property {
     public PropertyType getType() { return type; }
     public User getAgent() { return agent; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public Long getAgentId() { return agentId; }  // 🔥 Геттер для @Transient поля
 
-    // Сеттеры
+    // ===== Сеттеры =====
     public void setId(Long id) { this.id = id; }
     public void setTitle(String title) { this.title = title; }
     public void setDescription(String description) { this.description = description; }
@@ -89,4 +80,5 @@ public class Property {
     public void setType(PropertyType type) { this.type = type; }
     public void setAgent(User agent) { this.agent = agent; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setAgentId(Long agentId) { this.agentId = agentId; }  // 🔥 Сеттер для @Transient поля
 }

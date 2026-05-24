@@ -1,9 +1,12 @@
 package com.example.Laba7.service;
 
 import com.example.Laba7.model.Property;
+import com.example.Laba7.model.User;
 import com.example.Laba7.repository.PropertyRepository;
+import com.example.Laba7.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -12,6 +15,9 @@ public class PropertyService {
 
     @Autowired
     private PropertyRepository propertyRepository;
+
+    @Autowired  // 🔥 Обязательно!
+    private UserRepository userRepository;
 
     public List<Property> getAllProperties() {
         return propertyRepository.findAll();
@@ -22,7 +28,15 @@ public class PropertyService {
                 .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
     }
 
+    // 🔥 ИСПРАВЛЕННЫЙ МЕТОД СОЗДАНИЯ
     public Property createProperty(Property property) {
+        // Если пришёл agentId из JSON, но объект agent ещё null → загружаем User
+        if (property.getAgentId() != null && property.getAgent() == null) {
+            User agent = userRepository.findById(property.getAgentId())
+                    .orElseThrow(() -> new RuntimeException("Агент с ID " + property.getAgentId() + " не найден"));
+            property.setAgent(agent); // 🔥 JPA сохранит agent_id = 3
+        }
+
         return propertyRepository.save(property);
     }
 
