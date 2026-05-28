@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/applications")
@@ -21,33 +22,39 @@ public class ApplicationController {
     @Autowired private PropertyRepository propRepo;
     @Autowired private UserRepository userRepo;
 
-    // Клиент отправляет отклик
     @PostMapping
     public ResponseEntity<Application> create(@RequestBody ApplicationRequest req) {
-        // Находим объявление
+        // 1. Ищем объявление
         Optional<Property> propOpt = propRepo.findById(req.propertyId);
         if (propOpt.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
         Property prop = propOpt.get();
-
-        // 🔥 ВАЖНО: Получаем агента из объявления
-        Long agentId = null;
-        if (prop.getAgent() != null) {
-            agentId = prop.getAgent().getId();
-        }
+        Long agentId = (prop.getAgent() != null) ? prop.getAgent().getId() : null;
 
         if (agentId == null) {
             return ResponseEntity.status(400).build();
         }
 
+        // 2. 🔧 Ищем Клиента (User), чтобы узнать его Имя и Телефон
+        User client = userRepo.findById(req.clientId).orElse(null);
+
         Application app = new Application();
         app.setPropertyId(req.propertyId);
-        app.setAgentId(agentId);  // 🔥 Сохраняем ID агента
+        app.setAgentId(agentId);
         app.setClientId(req.clientId);
-        app.setClientName(req.clientName);
-        app.setClientPhone(req.clientPhone);
+
+        // 3. 🔧 Заполняем Имя и Телефон из БД (если клиент найден)
+        if (client != null) {
+            app.setClientName(client.getFullName()); // Проверьте, как называется поле в User.java (getFullName или getName)
+            app.setClientPhone(client.getPhone() != null ? client.getPhone() : "Не указан"); // Проверьте поле в User.java
+        } else {
+            // Если клиент не найден (странно, но бывает), берем из запроса или ставим заглушку
+            app.setClientName(req.clientName != null ? req.clientName : "Неизвестно");
+            app.setClientPhone(req.clientPhone != null ? req.clientPhone : "Не указан");
+        }
+
         app.setMessage(req.message);
         app.setStatus("NEW");
 
@@ -55,11 +62,35 @@ public class ApplicationController {
         return ResponseEntity.ok(saved);
     }
 
-    // Риэлтор получает свои заявки
     @GetMapping("/agent/{agentId}")
     public ResponseEntity<List<Application>> getByAgent(@PathVariable Long agentId) {
         return ResponseEntity.ok(appRepo.findByAgentId(agentId));
     }
+
+    @GetMapping("/client/{clientId}")
+    public ResponseEntity<List<Application>> getByClient(@PathVariable Long clientId) {
+        return ResponseEntity.ok(appRepo.findByClientId(clientId));
+    }
+
+    @PutMapping("/{id}/note")
+    public ResponseEntity<Application> updateNote(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        return appRepo.findById(id)
+                .map(app -> {
+                    app.setNote(body.get("note"));
+                    return ResponseEntity.ok(appRepo.save(app));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        appRepo.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 
 class ApplicationRequest {

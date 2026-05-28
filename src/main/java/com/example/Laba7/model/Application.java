@@ -2,6 +2,7 @@ package com.example.Laba7.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import jakarta.persistence.FetchType;
 
 @Entity
 @Table(name = "applications")
@@ -11,7 +12,7 @@ public class Application {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(name = "property_id")
     private Long propertyId;
 
     @Column(nullable = false)
@@ -30,18 +31,21 @@ public class Application {
     private String message;
 
     @Column(nullable = false)
-    private String status = "NEW"; // NEW, VIEWED, CONTACTED, CLOSED
+    private String status = "NEW";
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // ================= Конструкторы =================
+    @Column
+    private String note;
 
-    // Пустой конструктор (обязателен для JPA/Hibernate)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "property_id", insertable = false, updatable = false)
+    private Property property;
+
     public Application() {
     }
 
-    // Конструктор для создания новой заявки
     public Application(Long propertyId, Long clientId, Long agentId,
                        String clientName, String clientPhone, String message) {
         this.propertyId = propertyId;
@@ -53,8 +57,6 @@ public class Application {
         this.status = "NEW";
         this.createdAt = LocalDateTime.now();
     }
-
-    // ================= Геттеры =================
 
     public Long getId() {
         return id;
@@ -92,7 +94,13 @@ public class Application {
         return createdAt;
     }
 
-    // ================= Сеттеры =================
+    public String getNote() {
+        return note;
+    }
+
+    public Property getProperty() {
+        return property;
+    }
 
     public void setId(Long id) {
         this.id = id;
@@ -130,7 +138,13 @@ public class Application {
         this.createdAt = createdAt;
     }
 
-    // ================= Вспомогательные методы =================
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public void setProperty(Property property) {
+        this.property = property;
+    }
 
     @Override
     public String toString() {
