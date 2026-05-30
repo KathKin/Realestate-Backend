@@ -3,7 +3,7 @@ package com.example.Laba7.controller;
 import com.example.Laba7.model.User;
 import com.example.Laba7.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;  // ← ДОБАВИТЬ этот импорт!
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -43,7 +43,6 @@ public class UserController {
         return response;
     }
 
-    //  ИСПРАВЛЕННЫЙ МЕТОД
     @GetMapping("/check-realtor")
     public ResponseEntity<Map<String, Object>> checkRealtor(@RequestParam String email) {
         Optional<User> user = userService.findByEmail(email);
@@ -53,7 +52,6 @@ public class UserController {
         if (user.isPresent()) {
             User currentUser = user.get();
 
-            // 🔥 Проверяем на AGENT (так как в enum именно это значение для риэлтора)
             boolean isRealtor = currentUser.getRole() == UserRole.AGENT;
 
             response.put("isRealtor", isRealtor);

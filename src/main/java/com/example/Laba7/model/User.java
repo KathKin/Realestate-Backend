@@ -28,7 +28,6 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Конструкторы
     public User() {}
 
     public User(String email, String password, String fullName, String phone, UserRole role) {
@@ -40,7 +39,6 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Геттеры
     public Long getId() { return id; }
     public String getEmail() { return email; }
     public String getPassword() { return password; }
@@ -49,7 +47,6 @@ public class User {
     public UserRole getRole() { return role; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    // Сеттеры
     public void setId(Long id) { this.id = id; }
     public void setEmail(String email) { this.email = email; }
     public void setPassword(String password) { this.password = password; }

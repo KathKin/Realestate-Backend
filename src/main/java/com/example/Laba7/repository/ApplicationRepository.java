@@ -16,4 +16,6 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     @Query("SELECT a FROM Application a JOIN FETCH a.property WHERE a.clientId = :clientId")
     List<Application> findByClientId(@Param("clientId") Long clientId);
+
+    List<Application> findByPropertyId(Long propertyId);
 }

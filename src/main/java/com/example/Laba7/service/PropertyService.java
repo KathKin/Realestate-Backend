@@ -16,7 +16,7 @@ public class PropertyService {
     @Autowired
     private PropertyRepository propertyRepository;
 
-    @Autowired  // 🔥 Обязательно!
+    @Autowired
     private UserRepository userRepository;
 
     public List<Property> getAllProperties() {
@@ -28,13 +28,11 @@ public class PropertyService {
                 .orElseThrow(() -> new RuntimeException("Объявление не найдено"));
     }
 
-    // 🔥 ИСПРАВЛЕННЫЙ МЕТОД СОЗДАНИЯ
     public Property createProperty(Property property) {
-        // Если пришёл agentId из JSON, но объект agent ещё null → загружаем User
         if (property.getAgentId() != null && property.getAgent() == null) {
             User agent = userRepository.findById(property.getAgentId())
                     .orElseThrow(() -> new RuntimeException("Агент с ID " + property.getAgentId() + " не найден"));
-            property.setAgent(agent); // 🔥 JPA сохранит agent_id = 3
+            property.setAgent(agent);
         }
 
         return propertyRepository.save(property);

@@ -33,7 +33,6 @@ public class Booking {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Конструкторы
     public Booking() {}
 
     public Booking(Property property, User client, LocalDateTime viewingDate,
@@ -47,7 +46,6 @@ public class Booking {
         this.createdAt = LocalDateTime.now();
     }
 
-    // Геттеры
     public Long getId() { return id; }
     public Property getProperty() { return property; }
     public User getClient() { return client; }
@@ -57,7 +55,6 @@ public class Booking {
     public String getClientName() { return clientName; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
-    // Сеттеры
     public void setId(Long id) { this.id = id; }
     public void setProperty(Property property) { this.property = property; }
     public void setClient(User client) { this.client = client; }

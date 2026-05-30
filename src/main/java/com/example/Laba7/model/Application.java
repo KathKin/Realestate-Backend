@@ -36,8 +36,11 @@ public class Application {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column
-    private String note;
+    @Column(columnDefinition = "TEXT")
+    private String clientNote;
+
+    @Column(columnDefinition = "TEXT")
+    private String agentNote;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "property_id", insertable = false, updatable = false)
@@ -94,8 +97,12 @@ public class Application {
         return createdAt;
     }
 
-    public String getNote() {
-        return note;
+    public String getClientNote() {
+        return clientNote;
+    }
+
+    public String getAgentNote() {
+        return agentNote;
     }
 
     public Property getProperty() {
@@ -138,8 +145,12 @@ public class Application {
         this.createdAt = createdAt;
     }
 
-    public void setNote(String note) {
-        this.note = note;
+    public void setClientNote(String clientNote) {
+        this.clientNote = clientNote;
+    }
+
+    public void setAgentNote(String agentNote) {
+        this.agentNote = agentNote;
     }
 
     public void setProperty(Property property) {
@@ -161,7 +172,6 @@ public class Application {
                 '}';
     }
 
-    // Метод для обновления статуса
     public void updateStatus(String newStatus) {
         if ("VIEWED".equals(newStatus) || "CONTACTED".equals(newStatus) || "CLOSED".equals(newStatus)) {
             this.status = newStatus;

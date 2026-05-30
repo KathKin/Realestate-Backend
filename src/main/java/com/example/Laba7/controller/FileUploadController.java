@@ -25,28 +25,23 @@ public class FileUploadController {
 
     private final Path uploadDir = Paths.get("uploads/properties");
 
-    // Загрузка фото
     @PostMapping("/upload")
     public ResponseEntity<Map<String, Object>> uploadFile(@RequestParam("file") MultipartFile file) {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            // Создаём директорию, если не существует
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir);
             }
 
-            // Генерируем уникальное имя файла
             String originalFilename = file.getOriginalFilename();
             String extension = originalFilename != null ?
                     originalFilename.substring(originalFilename.lastIndexOf(".")) : ".jpg";
             String filename = UUID.randomUUID().toString() + extension;
 
-            // Сохраняем файл
             Path filePath = uploadDir.resolve(filename);
             file.transferTo(filePath);
 
-            // Формируем URL
             String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/api/files/download/")
                     .path(filename)
@@ -65,7 +60,6 @@ public class FileUploadController {
         }
     }
 
-    // Скачивание/просмотр фото
     @GetMapping("/download/{filename:.+}")
     public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
         try {

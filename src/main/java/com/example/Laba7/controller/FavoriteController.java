@@ -15,7 +15,6 @@ public class FavoriteController {
     @Autowired
     private FavoriteService favoriteService;
 
-    // 👇 НОВЫЙ МЕТОД
     @GetMapping
     public List<Favorite> getAllFavorites() {
         return favoriteService.getAllFavorites();

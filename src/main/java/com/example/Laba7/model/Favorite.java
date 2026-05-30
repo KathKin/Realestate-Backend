@@ -18,7 +18,6 @@ public class Favorite {
     @JoinColumn(name = "property_id", nullable = false)
     private Property property;
 
-    // Конструкторы
     public Favorite() {}
 
     public Favorite(User user, Property property) {
@@ -26,12 +25,10 @@ public class Favorite {
         this.property = property;
     }
 
-    // Геттеры
     public Long getId() { return id; }
     public User getUser() { return user; }
     public Property getProperty() { return property; }
 
-    // Сеттеры
     public void setId(Long id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
     public void setProperty(Property property) { this.property = property; }

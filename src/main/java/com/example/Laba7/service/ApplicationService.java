@@ -32,7 +32,7 @@ public class ApplicationService {
     public Application updateNote(Long id, String note) {
         return repository.findById(id)
                 .map(application -> {
-                    application.setNote(note);
+                    application.setClientNote(note);
                     return repository.save(application);
                 })
                 .orElse(null);

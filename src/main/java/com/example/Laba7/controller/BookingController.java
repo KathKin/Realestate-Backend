@@ -14,7 +14,6 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-    // 👇 НОВЫЙ МЕТОД
     @GetMapping
     public List<Booking> getAllBookings() {
         return bookingService.getAllBookings();

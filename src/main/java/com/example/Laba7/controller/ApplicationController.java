@@ -9,6 +9,7 @@ import com.example.Laba7.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.Laba7.dto.PropertyWithApplicationsDto;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
@@ -24,7 +25,6 @@ public class ApplicationController {
 
     @PostMapping
     public ResponseEntity<Application> create(@RequestBody ApplicationRequest req) {
-        // 1. Ищем объявление
         Optional<Property> propOpt = propRepo.findById(req.propertyId);
         if (propOpt.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -37,7 +37,6 @@ public class ApplicationController {
             return ResponseEntity.status(400).build();
         }
 
-        // 2. 🔧 Ищем Клиента (User), чтобы узнать его Имя и Телефон
         User client = userRepo.findById(req.clientId).orElse(null);
 
         Application app = new Application();
@@ -45,12 +44,10 @@ public class ApplicationController {
         app.setAgentId(agentId);
         app.setClientId(req.clientId);
 
-        // 3. 🔧 Заполняем Имя и Телефон из БД (если клиент найден)
         if (client != null) {
-            app.setClientName(client.getFullName()); // Проверьте, как называется поле в User.java (getFullName или getName)
-            app.setClientPhone(client.getPhone() != null ? client.getPhone() : "Не указан"); // Проверьте поле в User.java
+            app.setClientName(client.getFullName());
+            app.setClientPhone(client.getPhone() != null ? client.getPhone() : "Не указан");
         } else {
-            // Если клиент не найден (странно, но бывает), берем из запроса или ставим заглушку
             app.setClientName(req.clientName != null ? req.clientName : "Неизвестно");
             app.setClientPhone(req.clientPhone != null ? req.clientPhone : "Не указан");
         }
@@ -72,14 +69,27 @@ public class ApplicationController {
         return ResponseEntity.ok(appRepo.findByClientId(clientId));
     }
 
-    @PutMapping("/{id}/note")
-    public ResponseEntity<Application> updateNote(
+    @PutMapping("/{id}/note/client")
+    public ResponseEntity<Application> updateClientNote(
             @PathVariable Long id,
             @RequestBody Map<String, String> body) {
 
         return appRepo.findById(id)
                 .map(app -> {
-                    app.setNote(body.get("note"));
+                    app.setClientNote(body.get("note"));
+                    return ResponseEntity.ok(appRepo.save(app));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/note/agent")
+    public ResponseEntity<Application> updateAgentNote(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        return appRepo.findById(id)
+                .map(app -> {
+                    app.setAgentNote(body.get("note"));
                     return ResponseEntity.ok(appRepo.save(app));
                 })
                 .orElse(ResponseEntity.notFound().build());
@@ -89,6 +99,31 @@ public class ApplicationController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         appRepo.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+    @GetMapping("/agent/{agentId}/properties-with-apps")
+    public ResponseEntity<List<PropertyWithApplicationsDto>> getPropertiesWithApps(@PathVariable Long agentId) {
+        List<Application> apps = appRepo.findByAgentId(agentId);
+        java.util.Map<Long, java.util.List<Application>> grouped = apps.stream()
+                .collect(java.util.stream.Collectors.groupingBy(Application::getPropertyId));
+
+        List<PropertyWithApplicationsDto> result = new java.util.ArrayList<>();
+        for (java.util.Map.Entry<Long, java.util.List<Application>> entry : grouped.entrySet()) {
+            Property prop = propRepo.findById(entry.getKey()).orElse(null);
+            if (prop != null) {
+                PropertyWithApplicationsDto dto = new PropertyWithApplicationsDto();
+                dto.setPropertyId(prop.getId());
+                dto.setPropertyTitle(prop.getTitle());
+                dto.setPropertyImageUrl(prop.getImageUrl());
+                dto.setApplicationsCount(entry.getValue().size());
+                result.add(dto);
+            }
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/property/{propertyId}")
+    public ResponseEntity<List<Application>> getByProperty(@PathVariable Long propertyId) {
+        return ResponseEntity.ok(appRepo.findByPropertyId(propertyId));
     }
 
 }
